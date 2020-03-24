@@ -1,0 +1,18 @@
+# Default ignored files
+/.idea/workspace.xml
+build
+# User-specific things
+.idea/**/workspace.xml
+.idea/**/usage.statistics.xml
+.idea/**/tasks.xml
+
+# Files created by Gradle auto-import
+.idea/modules.xml
+.idea/*.iml
+.idea/modules
+
+.idea/libraries
+.idea/**
+.bin
+.lock
+.gradle
