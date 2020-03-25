@@ -1,20 +1,25 @@
 package com.oracle.ehcache;
 
+import com.oracle.dicom.agent.mediator.dto.AgentMessageResultDTO;
 import org.ehcache.Cache;
+import org.ehcache.CacheManager;
 import org.ehcache.PersistentCacheManager;
+import org.ehcache.config.CacheConfiguration;
 import org.ehcache.config.builders.CacheConfigurationBuilder;
 import org.ehcache.config.builders.CacheManagerBuilder;
 import org.ehcache.config.builders.ResourcePoolsBuilder;
 import org.ehcache.config.units.EntryUnit;
 import org.ehcache.config.units.MemoryUnit;
+import org.ehcache.impl.config.persistence.CacheManagerPersistenceConfiguration;
 
 import java.io.File;
+import java.sql.SQLOutput;
 
 public class EhCacheTest {
 
     private static int counter = 1;
     private static PersistentCacheManager cacheManager;
-    private static Cache<Integer, String> myCache;
+    private static Cache<String, MessageResultWrapper> myCache;
 
     public Thread getProducer(){
         return new Thread() {
@@ -33,10 +38,10 @@ public class EhCacheTest {
     }
 
     public void getMessageFromCache() {
-        int key = 1;
+        Integer key = 1;
         while(true) {
-            String val = myCache.get(key);
-            String str = String.format("CONSUMER : key = {}, value = {}", key, val);
+            MessageResultWrapper val = myCache.get(key.toString());
+            String str = "CONSUMER : key = " + key + " value = " + val;
             System.out.println(str);
             key++;
             try {
@@ -50,12 +55,13 @@ public class EhCacheTest {
 
 
     public void putMessageInCache() {
-        int key = 1;
+        Integer key = 1;
         while(true) {
-            String val = "Message entry: " + key;
-            String str = String.format("PRODUCER: key = {}, value = {}",key,val);
+            MessageResultWrapper val = new MessageResultWrapper(new AgentMessageResultDTO());
+            val.getMessage().setMsgId("QWERTY " + key);
+            String str = "PRODUCER : key = " + key + " value = " + val.getMessage().getMsgId();
             System.out.println(str);
-            myCache.put(key, val);
+            myCache.put(key.toString(), val);
             key++;
             try {
                 Thread.sleep(200);
@@ -65,26 +71,64 @@ public class EhCacheTest {
         }
     }
 
+    public void concurrentTest() throws InterruptedException {
+        Thread p = this.getProducer();
+        Thread c = this.getConsumer();
+        p.start();
+        Thread.sleep(100);
+        c.start();
+
+        p.join();
+        //c.join();
+    }
+
+    public void insertNRecords(int n) {
+        for (int i=0;i<n;i++) {
+            MessageResultWrapper val = new MessageResultWrapper(new AgentMessageResultDTO());
+            val.getMessage().setMsgId("QWERTY" + i);
+            System.out.println("Inserting id: " + val.getMessage().getMsgId());
+            myCache.put(""+i, val);
+        }
+    }
+
+    public void getNRecords(int n) {
+        for (int i=0;i<n;i++) {
+            MessageResultWrapper val = myCache.get(""+i);
+            System.out.println("Record: Key: " + i + " Val: " + val);
+        }
+    }
+
 
     public static void main(String[] args) throws InterruptedException {
+        //cacheManager = (PersistentCacheManager) CacheManagerBuilder.newCacheManagerBuilder().build(true);
+        CacheConfiguration<String, MessageResultWrapper> cacheConfig =
+              CacheConfigurationBuilder.newCacheConfigurationBuilder(
+                  String.class, MessageResultWrapper.class,
+                  ResourcePoolsBuilder.newResourcePoolsBuilder()
+                      //.heap(2, EntryUnit.ENTRIES)
+                      .disk(100, MemoryUnit.MB, true))
+                  .withValueSerializer(new AgentMessageEhCacheSerializer())
+                  .build();
         cacheManager = CacheManagerBuilder.newCacheManagerBuilder()
+            .with(new CacheManagerPersistenceConfiguration(new File("./build")))
+            .withCache("myCache", cacheConfig)
+            .build(true);
+
+        /*cacheManager = CacheManagerBuilder.newCacheManagerBuilder()
             .with(CacheManagerBuilder.persistence(new File("./build", "myData")))
             .withCache("myCache",
-                CacheConfigurationBuilder.newCacheConfigurationBuilder(Integer.class, String.class,
+                CacheConfigurationBuilder.newCacheConfigurationBuilder(String.class, MessageResultWrapper.class,
                     ResourcePoolsBuilder.newResourcePoolsBuilder()
-                        .heap(2, EntryUnit.ENTRIES)
-                        .disk(5, MemoryUnit.MB, true)
-                )).build(true);
-        myCache = cacheManager.getCache("myCache", Integer.class, String.class);
+                        .heap(10, EntryUnit.ENTRIES)
+                        .disk(100, MemoryUnit.MB, true)
+                )).build(true);*/
+        myCache = cacheManager.getCache("myCache", String.class, MessageResultWrapper.class);
         EhCacheTest ehCacheTest = new EhCacheTest();
+        //ehCacheTest.concurrentTest();
 
-
-        Thread p = ehCacheTest.getProducer();
-        Thread c = ehCacheTest.getConsumer();
-        p.start();
-        c.start();
+        ehCacheTest.insertNRecords(10);
         Thread.sleep(1000);
-        ehCacheTest.getConsumer().start();
+        ehCacheTest.getNRecords(10);
 
         Runtime.getRuntime().addShutdownHook(new Thread() {
             public void run() {
@@ -93,8 +137,6 @@ public class EhCacheTest {
             }
         });
 
-        p.join();
-        c.join();
         System.out.println("Application terminated");
     }
 
