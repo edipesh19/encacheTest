@@ -84,7 +84,7 @@ public class EhCacheTest {
 
     public void insertNRecords(int n) {
         for (int i=0;i<n;i++) {
-            MessageResultWrapper val = new MessageResultWrapper(new AgentMessageResultDTO());
+            MessageResultWrapper val = new MessageResultWrapper(new AgentMessageResultDTO(), false);
             val.getMessage().setMsgId("QWERTY" + i);
             System.out.println("Inserting id: " + val.getMessage().getMsgId());
             myCache.put(""+i, val);
@@ -107,7 +107,7 @@ public class EhCacheTest {
                   ResourcePoolsBuilder.newResourcePoolsBuilder()
                       //.heap(2, EntryUnit.ENTRIES)
                       .disk(100, MemoryUnit.MB, true))
-                  .withValueSerializer(new AgentMessageEhCacheSerializer())
+                  .withValueSerializer(KryoSerializer.class)
                   .build();
         cacheManager = CacheManagerBuilder.newCacheManagerBuilder()
             .with(new CacheManagerPersistenceConfiguration(new File("./build")))
@@ -126,9 +126,9 @@ public class EhCacheTest {
         EhCacheTest ehCacheTest = new EhCacheTest();
         //ehCacheTest.concurrentTest();
 
-        ehCacheTest.insertNRecords(10);
+        ehCacheTest.insertNRecords(1);
         Thread.sleep(1000);
-        ehCacheTest.getNRecords(10);
+        ehCacheTest.getNRecords(1);
 
         Runtime.getRuntime().addShutdownHook(new Thread() {
             public void run() {

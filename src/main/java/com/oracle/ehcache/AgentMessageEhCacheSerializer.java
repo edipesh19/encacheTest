@@ -29,8 +29,10 @@ public class AgentMessageEhCacheSerializer implements Serializer<MessageResultWr
             if (object == null) {
                 return null;
             } else {
-                ByteBuffer b =  ByteBuffer.wrap(MediatorUtil.toJson(object).getBytes(encoding));
-                return b;
+                String str = MediatorUtil.toJson(object);
+                byte[] b =str.getBytes(encoding);
+                ByteBuffer bf =  ByteBuffer.wrap(b);
+                return bf;
             }
         } catch (JsonProcessingException | UnsupportedEncodingException e) {
             String errMsg = "Error when serializing AgentMessageDTO to byte[]";
