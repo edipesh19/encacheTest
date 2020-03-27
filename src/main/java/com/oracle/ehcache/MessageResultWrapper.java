@@ -1,5 +1,6 @@
 package com.oracle.ehcache;
 
+import java.util.Objects;
 import java.util.Properties;
 import com.oracle.dicom.agent.mediator.dto.AgentMessageResultDTO;
 
@@ -71,4 +72,21 @@ public class MessageResultWrapper {
     private Properties messageProperties;
 
     public static final String PROP_KEY_MSG_MARKED_FOR_DELETE = "dicom.agent.messaging.message.markedForDelete";
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(message, messageProperties);
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (!(o instanceof MessageResultWrapper)) {
+            return false;
+        }
+        MessageResultWrapper that = (MessageResultWrapper) o;
+        return messageProperties.equals(that.messageProperties);
+    }
 }

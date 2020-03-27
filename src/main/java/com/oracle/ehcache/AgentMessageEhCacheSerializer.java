@@ -4,23 +4,22 @@ import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.nio.ByteBuffer;
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.oracle.dicom.agent.mediator.util.MediatorUtil;
+import com.fasterxml.jackson.databind.DeserializationFeature;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.ehcache.spi.serialization.Serializer;
 import org.ehcache.spi.serialization.SerializerException;
 
-/**
- * Serialize instances of AgentMessageDTO to byte[].
- * <p>
- * An instance of AgentMessageDTO is serialized to a String object in JSON format first.
- * A byte array is obtained from this String object.
- */
 public class AgentMessageEhCacheSerializer implements Serializer<MessageResultWrapper> {
+
+    private String encoding = "UTF-8";
+    private static ObjectMapper c_objMapper;
+
     public AgentMessageEhCacheSerializer() {
+        c_objMapper = new ObjectMapper().configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
     }
 
-    private String encoding = "UTF8";
-
     public AgentMessageEhCacheSerializer(ClassLoader loader) {
+        c_objMapper = new ObjectMapper().configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
     }
 
     @Override
@@ -29,13 +28,13 @@ public class AgentMessageEhCacheSerializer implements Serializer<MessageResultWr
             if (object == null) {
                 return null;
             } else {
-                ByteBuffer b =  ByteBuffer.wrap(MediatorUtil.toJson(object).getBytes(encoding));
+                ByteBuffer b =  ByteBuffer.wrap(c_objMapper.writeValueAsString(object).getBytes(this.encoding));
+                System.out.println(equals(object, b));
                 return b;
             }
-        } catch (JsonProcessingException | UnsupportedEncodingException e) {
-            String errMsg = "Error when serializing AgentMessageDTO to byte[]";
-            // Do not throw exception here to avoid poison pills issue please check kafka FAQ for details
-            // https://docs.confluent.io/current/streams/faq.html#streams-faq-failure-handling-deserialization-errors-quarantine
+        } catch (UnsupportedEncodingException | JsonProcessingException | ClassNotFoundException e) {
+            String errMsg = "Error when serializing MessageResultWrapper to byte[]";
+            System.out.println(errMsg);
             return null;
         }
     }
@@ -46,15 +45,12 @@ public class AgentMessageEhCacheSerializer implements Serializer<MessageResultWr
             if (binary == null) {
                 return null;
             } else {
-                return MediatorUtil.fromJson(new String(binary.array(), this.encoding), MessageResultWrapper.class);
+                return c_objMapper.readValue(new String(binary.array(), this.encoding), MessageResultWrapper.class);
             }
-        } catch (JsonProcessingException | UnsupportedEncodingException e) {
-            String errMsg = "Error when serializing AgentMessageDTO to byte[]";
-            // Do not throw exception here to avoid poison pills issue please check kafka FAQ for details
-            // https://docs.confluent.io/current/streams/faq.html#streams-faq-failure-handling-deserialization-errors-quarantine
-            return null;
         } catch (IOException e) {
+            String errMsg = "Error when reading MessageResultWrapper to byte[]";
             e.printStackTrace();
+            System.out.println(errMsg);
             return null;
         }
     }

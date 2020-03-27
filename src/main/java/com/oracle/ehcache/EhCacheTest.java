@@ -13,11 +13,9 @@ import org.ehcache.config.units.MemoryUnit;
 import org.ehcache.impl.config.persistence.CacheManagerPersistenceConfiguration;
 
 import java.io.File;
-import java.sql.SQLOutput;
 
 public class EhCacheTest {
 
-    private static int counter = 1;
     private static PersistentCacheManager cacheManager;
     private static Cache<String, MessageResultWrapper> myCache;
 
@@ -37,11 +35,41 @@ public class EhCacheTest {
         };
     }
 
+    public Thread getRemover(){
+        return new Thread() {
+            public void run() {
+                removeFromCache();
+            }
+        };
+    }
+
+    private void removeFromCache() {
+        Integer key = 1;
+        while(true) {
+            myCache.remove(key.toString());
+            String str;
+            str = "REMOVER : key = " + key;
+            System.out.println(str);
+            key++;
+            try {
+                Thread.sleep(1000);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
+
     public void getMessageFromCache() {
         Integer key = 1;
         while(true) {
             MessageResultWrapper val = myCache.get(key.toString());
-            String str = "CONSUMER : key = " + key + " value = " + val;
+            String str;
+            if (val != null) {
+                str = "CONSUMER : key = " + key + " value = " + val.getMessage().getMsgId();
+            } else {
+                str = "CONSUMER : key = " + key + " value = null";
+            }
             System.out.println(str);
             key++;
             try {
@@ -56,7 +84,7 @@ public class EhCacheTest {
 
     public void putMessageInCache() {
         Integer key = 1;
-        while(true) {
+        while(key<=100 && true) {
             MessageResultWrapper val = new MessageResultWrapper(new AgentMessageResultDTO());
             val.getMessage().setMsgId("QWERTY " + key);
             String str = "PRODUCER : key = " + key + " value = " + val.getMessage().getMsgId();
@@ -74,9 +102,12 @@ public class EhCacheTest {
     public void concurrentTest() throws InterruptedException {
         Thread p = this.getProducer();
         Thread c = this.getConsumer();
+        Thread r = this.getRemover();
         p.start();
         Thread.sleep(100);
         c.start();
+        Thread.sleep(1000);
+        r.start();
 
         p.join();
         //c.join();
@@ -105,9 +136,9 @@ public class EhCacheTest {
               CacheConfigurationBuilder.newCacheConfigurationBuilder(
                   String.class, MessageResultWrapper.class,
                   ResourcePoolsBuilder.newResourcePoolsBuilder()
-                      //.heap(2, EntryUnit.ENTRIES)
-                      .disk(100, MemoryUnit.MB, true))
-                  .withValueSerializer(new AgentMessageEhCacheSerializer())
+                      .heap(1, EntryUnit.ENTRIES)
+                      .disk(5, MemoryUnit.MB, true))
+                  .withValueSerializer(AgentMessageEhCacheSerializer.class)
                   .build();
         cacheManager = CacheManagerBuilder.newCacheManagerBuilder()
             .with(new CacheManagerPersistenceConfiguration(new File("./build")))
@@ -125,17 +156,18 @@ public class EhCacheTest {
         myCache = cacheManager.getCache("myCache", String.class, MessageResultWrapper.class);
         EhCacheTest ehCacheTest = new EhCacheTest();
         //ehCacheTest.concurrentTest();
-
-        ehCacheTest.insertNRecords(10);
-        Thread.sleep(1000);
+        //ehCacheTest.getNRecords(100);
+        ehCacheTest.insertNRecords(100);
+        Thread.sleep(3000);
         ehCacheTest.getNRecords(10);
+        //cacheManager.close();
 
-        Runtime.getRuntime().addShutdownHook(new Thread() {
+        /*Runtime.getRuntime().addShutdownHook(new Thread() {
             public void run() {
                 System.out.println("Shutdown Hook is running !");
                 cacheManager.close();
             }
-        });
+        });*/
 
         System.out.println("Application terminated");
     }

@@ -15,6 +15,7 @@ dependencies {
     // For cache support
     compile 'org.ehcache:ehcache:3.8.1'
     compile group: 'javax.cache', name: 'cache-api', version: '1.1.1'
+    compile files('/Users/nnaggarw/Downloads/gson-2.8.2.jar')
     compile files('/Users/nnaggarw/Documents/agent-common-dev-1.0.0.jar')
     compile group: 'com.fasterxml.jackson.core', name: 'jackson-databind', version: '2.9.9'
     //compile group: 'org.slf4j', name: 'slf4j-log4j12', version: '1.7.25'
