@@ -29,10 +29,9 @@ public class AgentMessageEhCacheSerializer implements Serializer<MessageResultWr
                 return null;
             } else {
                 ByteBuffer b =  ByteBuffer.wrap(c_objMapper.writeValueAsString(object).getBytes(this.encoding));
-                System.out.println(equals(object, b));
                 return b;
             }
-        } catch (UnsupportedEncodingException | JsonProcessingException | ClassNotFoundException e) {
+        } catch (UnsupportedEncodingException | JsonProcessingException e) {
             String errMsg = "Error when serializing MessageResultWrapper to byte[]";
             System.out.println(errMsg);
             return null;
