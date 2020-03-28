@@ -35,7 +35,7 @@ public class EhCacheTest {
                     .disk(5, MemoryUnit.MB, true))
                 .withService(cacheEventListenerConfiguration)
                 .withValueSerializer(AgentMessageEhCacheSerializer.class)
-                .withExpiry(ExpiryPolicyBuilder.timeToLiveExpiration(Duration.ofSeconds(10)))
+                //.withExpiry(ExpiryPolicyBuilder.timeToLiveExpiration(Duration.ofSeconds(10)))
                 .withEvictionAdvisor(new EhcacheEvictionAdvisor())
                 .build();
         cacheManager = CacheManagerBuilder.newCacheManagerBuilder()
@@ -50,12 +50,12 @@ public class EhCacheTest {
         //ehCacheTest.concurrentTest();
         //ehCacheTest.getNRecords(100);
         ehCacheTest.insertNRecords(5);
-        Thread.sleep(1000);
+        //Thread.sleep(1000);
         //ehCacheTest.getNRecords(1);
         //ehCacheTest.getAndRemoveNRecords(2);
         //Thread.sleep(20000);
-        ehCacheTest.getNRecords(5);
         Thread.sleep(60000);
+        ehCacheTest.getNRecords(5);
         //Thread.sleep(1000);
         //cacheManager.close();
 
