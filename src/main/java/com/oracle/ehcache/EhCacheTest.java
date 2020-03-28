@@ -23,7 +23,8 @@ public class EhCacheTest {
 
     public static void main(String[] args) throws InterruptedException {
         CacheEventListenerConfigurationBuilder cacheEventListenerConfiguration = CacheEventListenerConfigurationBuilder
-            .newEventListenerConfiguration(new EhcacheEventListener(), EventType.CREATED, EventType.REMOVED, EventType.EXPIRED)
+            .newEventListenerConfiguration(new EhcacheEventListener(), EventType.CREATED, EventType.REMOVED, EventType.EXPIRED,
+                EventType.EVICTED)
             .unordered().asynchronous();
 
         CacheConfiguration<String, MessageResultWrapper> cacheConfig =
@@ -34,7 +35,8 @@ public class EhCacheTest {
                     .disk(5, MemoryUnit.MB, true))
                 .withService(cacheEventListenerConfiguration)
                 .withValueSerializer(AgentMessageEhCacheSerializer.class)
-                .withExpiry(ExpiryPolicyBuilder.timeToLiveExpiration(Duration.ofMinutes(2)))
+                .withExpiry(ExpiryPolicyBuilder.timeToLiveExpiration(Duration.ofSeconds(10)))
+                .withEvictionAdvisor(new EhcacheEvictionAdvisor())
                 .build();
         cacheManager = CacheManagerBuilder.newCacheManagerBuilder()
             .with(new CacheManagerPersistenceConfiguration(new File("./build")))
@@ -47,11 +49,14 @@ public class EhCacheTest {
         EhCacheTest ehCacheTest = new EhCacheTest();
         //ehCacheTest.concurrentTest();
         //ehCacheTest.getNRecords(100);
-        ehCacheTest.insertNRecords(100);
+        ehCacheTest.insertNRecords(5);
         Thread.sleep(1000);
-        //ehCacheTest.getNRecords(100);
-        Thread.sleep(1000);
-        ehCacheTest.getAndRemoveNRecords(100);
+        //ehCacheTest.getNRecords(1);
+        //ehCacheTest.getAndRemoveNRecords(2);
+        //Thread.sleep(20000);
+        ehCacheTest.getNRecords(5);
+        Thread.sleep(60000);
+        //Thread.sleep(1000);
         //cacheManager.close();
 
         /*Runtime.getRuntime().addShutdownHook(new Thread() {
@@ -160,6 +165,9 @@ public class EhCacheTest {
         for (int i = 0; i < n; i++) {
             MessageResultWrapper val = new MessageResultWrapper(new AgentMessageResultDTO());
             val.getMessage().setMsgId("QWERTY" + i);
+            if (i >=3) {
+                val.markMessageForDelete();
+            }
             //System.out.println("Inserting id: " + val.getMessage().getMsgId());
             myCache.put("" + i, val);
         }

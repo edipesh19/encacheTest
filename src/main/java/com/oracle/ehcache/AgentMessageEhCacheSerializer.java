@@ -40,11 +40,24 @@ public class AgentMessageEhCacheSerializer implements Serializer<MessageResultWr
 
     @Override
     public MessageResultWrapper read(ByteBuffer binary) throws ClassNotFoundException, SerializerException {
+        System.out.println("Read called");
         try {
             if (binary == null) {
                 return null;
             } else {
-                return c_objMapper.readValue(new String(binary.array(), this.encoding), MessageResultWrapper.class);
+                //String temp = new String(binary.array(), this.encoding);
+                //return c_objMapper.readValue(temp, MessageResultWrapper.class);
+                String s;
+                if (binary.hasArray()) {
+                    s = new String(binary.array(),
+                        binary.arrayOffset() + binary.position(),
+                        binary.remaining(), this.encoding);
+                } else {
+                    final byte[] b = new byte[binary.remaining()];
+                    binary.duplicate().get(b);
+                    s = new String(b);
+                }
+                return c_objMapper.readValue(s, MessageResultWrapper.class);
             }
         } catch (IOException e) {
             String errMsg = "Error when reading MessageResultWrapper to byte[]";
