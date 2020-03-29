@@ -40,7 +40,6 @@ public class AgentMessageEhCacheSerializer implements Serializer<MessageResultWr
 
     @Override
     public MessageResultWrapper read(ByteBuffer binary) throws ClassNotFoundException, SerializerException {
-        System.out.println("Read called");
         try {
             if (binary == null) {
                 return null;
