@@ -1,12 +1,16 @@
 package io.redis.stream.consumer.demo;
 
 import io.lettuce.core.Consumer;
+import io.lettuce.core.Limit;
+import io.lettuce.core.Range;
 import io.lettuce.core.RedisBusyException;
 import io.lettuce.core.RedisClient;
 import io.lettuce.core.StreamMessage;
 import io.lettuce.core.XReadArgs;
 import io.lettuce.core.api.StatefulRedisConnection;
 import io.lettuce.core.api.sync.RedisCommands;
+import reactor.core.publisher.Flux;
+import reactor.core.publisher.Mono;
 
 import java.util.List;
 
@@ -18,8 +22,11 @@ public class SimpleRedisStreamConsumer {
     public int count;
     public boolean acks;
     public boolean readPending;
+    public boolean claim;
+    public String prevConsumerId;
 
-    public SimpleRedisStreamConsumer(String streamName, String groupId, String consumerId, String count, String deleteOrNot, String acks, String readPending) {
+    public SimpleRedisStreamConsumer(String streamName, String groupId, String consumerId, String count, String deleteOrNot,
+                                     String acks, String readPending, String claim, String prevConsumerId) {
         this.streamName = streamName;
         this.groupId = groupId;
         this.consumerId = consumerId;
@@ -27,6 +34,8 @@ public class SimpleRedisStreamConsumer {
         this.delete = Boolean.parseBoolean(deleteOrNot);
         this.acks = Boolean.parseBoolean(acks);
         this.readPending = Boolean.parseBoolean(readPending);
+        this.claim = Boolean.parseBoolean(claim);
+        this.prevConsumerId = prevConsumerId;
     }
 
     public void consume() {
@@ -40,6 +49,17 @@ public class SimpleRedisStreamConsumer {
             System.out.println(String.format("\t Group '%s' already exists", groupId));
         }
 
+        if(claim) {
+            Range<String> range = Range.create("-", "+");
+            Limit limit = Limit.create(0, 10000000);
+            List<Object> pending = syncCommands.xpending(streamName, Consumer.from(groupId, prevConsumerId),range, limit);
+            System.out.println("Pending: " + pending);
+            for(int i=0;i<pending.size();i++) {
+                List<String> inner = (List<String>) pending.get(i);
+                //System.out.println("**********" + inner.get(0));
+                syncCommands.xclaim(streamName, Consumer.from(groupId, consumerId), 1000, inner.get(0));
+            }
+        }
 
         System.out.println("=========== Reading Pending ===========");
         if(readPending) {
@@ -79,9 +99,11 @@ public class SimpleRedisStreamConsumer {
     private void getPendingMessageIfAny(RedisCommands<String, String> syncCommands) {
         while (true) {
 
-            List<Object> pending = syncCommands.xpending(streamName, groupId);
-            System.out.println(pending.get(0));
-            if(Integer.parseInt(pending.get(0).toString()) == 0) {
+            Range<String> range = Range.create("-", "+");
+            Limit limit = Limit.create(0, 10000000);
+            List<Object> pending = syncCommands.xpending(streamName, Consumer.from(groupId, consumerId), range, limit);
+            System.out.println("Pending count: " + pending.size());
+            if(pending.size() == 0) {
                 break;
             }
             List<StreamMessage<String, String>> pendingMessages = syncCommands.xreadgroup(
