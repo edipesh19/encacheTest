@@ -9,7 +9,7 @@ buildscript {
 
 plugins {
     id 'java'
-    id 'com.github.johnrengelman.shadow' version '2.0.4'
+    id 'com.github.johnrengelman.shadow'
 }
 
 ext {
@@ -21,7 +21,7 @@ tasks.withType(JavaCompile) {
     options.encoding = 'UTF-8'
 }
 
-group 'io.redis.stream.demo'
+group 'io.redis.stream.consumer.demo'
 version '1.0-SNAPSHOT'
 
 sourceCompatibility = 1.8
@@ -32,11 +32,16 @@ repositories {
 }
 
 dependencies {
-    // For cache support
-    compile 'org.ehcache:ehcache:3.8.1'
-    compile group: 'javax.cache', name: 'cache-api', version: '1.1.1'
-    compile files('/Users/dipdutta/src/dicom/agent/agent-common/build/libs/agent-common-dev-1.0.0.jar')
-    compile group: 'com.fasterxml.jackson.core', name: 'jackson-databind', version: '2.9.9'
-    compile group: 'org.slf4j', name: 'slf4j-log4j12', version: '1.7.25'
+    // https://mvnrepository.com/artifact/io.lettuce/lettuce-core
+    compile group: 'io.lettuce', name: 'lettuce-core', version: '5.3.0.RELEASE'
     testCompile group: 'junit', name: 'junit', version: '4.12'
 }
+
+shadowJar {
+    mergeServiceFiles()
+    manifest {
+        attributes('Main-Class': 'io.redis.stream.consumer.demo.Main')
+    }
+}
+
+build.dependsOn shadowJar

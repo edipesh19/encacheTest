@@ -1,2 +1,4 @@
 rootProject.name = 'EhCache'
+include 'redis-stream-producer-demo'
+include 'redis-stream-consumer-demo'
 
