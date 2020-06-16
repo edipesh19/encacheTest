@@ -1,4 +1,4 @@
-package com.oracle.ehcache;
+package ehcache;
 
 import com.oracle.dicom.agent.mediator.dto.AgentMessageResultDTO;
 import org.ehcache.Cache;
@@ -8,7 +8,6 @@ import org.ehcache.config.CacheConfiguration;
 import org.ehcache.config.builders.CacheConfigurationBuilder;
 import org.ehcache.config.builders.CacheEventListenerConfigurationBuilder;
 import org.ehcache.config.builders.CacheManagerBuilder;
-import org.ehcache.config.builders.ExpiryPolicyBuilder;
 import org.ehcache.config.builders.ResourcePoolsBuilder;
 import org.ehcache.config.units.EntryUnit;
 import org.ehcache.config.units.MemoryUnit;
@@ -18,7 +17,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.File;
-import java.time.Duration;
 
 public class EhCacheTest {
     private static Logger logger = LoggerFactory.getLogger(EhCacheTest.class.getName());

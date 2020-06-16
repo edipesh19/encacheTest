@@ -1,4 +1,4 @@
-package com.oracle.ehcache;
+package ehcache;
 
 import org.ehcache.config.EvictionAdvisor;
 

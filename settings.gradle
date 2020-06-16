@@ -1,4 +1,5 @@
-rootProject.name = 'EhCache'
+rootProject.name = 'CachePoC'
+include 'EhCacheDemo'
 include 'redis-stream-producer-demo'
 include 'redis-stream-consumer-demo'
 

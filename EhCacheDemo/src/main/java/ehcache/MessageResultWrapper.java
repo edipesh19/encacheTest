@@ -1,8 +1,9 @@
-package com.oracle.ehcache;
+package ehcache;
+
+import com.oracle.dicom.agent.mediator.dto.AgentMessageResultDTO;
 
 import java.util.Objects;
 import java.util.Properties;
-import com.oracle.dicom.agent.mediator.dto.AgentMessageResultDTO;
 
 public class MessageResultWrapper {
 
