@@ -44,4 +44,4 @@ shadowJar {
     }
 }
 
-build.dependsOn shadowJar
+//build.dependsOn shadowJar
