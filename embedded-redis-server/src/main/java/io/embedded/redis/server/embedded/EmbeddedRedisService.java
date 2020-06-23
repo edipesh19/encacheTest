@@ -28,7 +28,7 @@ public class EmbeddedRedisService {
     @PostConstruct
     public void start() throws IOException {
         Thread t = new Thread(() -> {
-            File redisServerFile = new File("/Users/dipdutta/Downloads/redis-6.0.1/src/redis-server");
+            File redisServerFile = new File("/Users/nnaggarw/Downloads/redis-6.0.1/src/redis-server");
             redisServer = new RedisServer(redisServerFile, 6379);
             redisServer.start();
         });
