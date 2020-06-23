@@ -3,4 +3,5 @@ include 'EhCacheDemo'
 include 'redis-stream-producer-demo'
 include 'redis-stream-consumer-demo'
 include 'embedded-redis-server'
+include 'common-redis-library'
 
