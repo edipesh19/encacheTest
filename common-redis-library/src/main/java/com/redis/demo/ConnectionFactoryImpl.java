@@ -6,7 +6,6 @@ import io.lettuce.core.RedisURI;
 import io.lettuce.core.api.StatefulRedisConnection;
 
 import java.time.Duration;
-import java.util.concurrent.TimeUnit;
 
 public class ConnectionFactoryImpl implements ConnectionFactory<String, AgentMessageDTO>{
     @Override

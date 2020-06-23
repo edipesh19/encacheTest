@@ -31,8 +31,8 @@ public class AgentMessageDTOCodec implements RedisCodec<String, AgentMessageDTO>
 
     @Override
     public String decodeKey(ByteBuffer bytes) {
-        return charset.decode(bytes).toString();
-        //return stringCodec.decodeKey(bytes);
+        //return charset.decode(bytes).toString();
+        return stringCodec.decodeKey(bytes);
     }
 
     @Override
@@ -60,8 +60,8 @@ public class AgentMessageDTOCodec implements RedisCodec<String, AgentMessageDTO>
 
     @Override
     public ByteBuffer encodeKey(String key) {
-        return charset.encode(key);
-        //return stringCodec.encodeKey(key);
+        //return charset.encode(key);
+        return stringCodec.encodeKey(key);
     }
 
     @Override
