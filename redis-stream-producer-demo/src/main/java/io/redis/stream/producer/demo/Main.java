@@ -6,7 +6,8 @@ public class Main {
     public static void main(String[] args) throws MessagingException {
         System.out.println("======== Starting Producer ========");
         if(args.length < 3) {
-            System.out.println("USAGE:, arg1 -> number of record to produce pass zero for infinite, arg2 -> sleep interval after each record produced, arg3 -> agentId");
+            System.out.println("USAGE:, arg1 -> number of record to produce pass zero for infinite, arg2 -> sleep interval after each record produced, " +
+                "arg3 -> streamName");
             return;
         }
         System.out.println("arg1 " + args[0]);

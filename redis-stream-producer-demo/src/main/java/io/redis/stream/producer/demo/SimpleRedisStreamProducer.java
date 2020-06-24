@@ -10,11 +10,11 @@ import com.redis.demo.exception.MessagingException;
 public class SimpleRedisStreamProducer {
 
     private RedisMessageClient redisMessageClient;
-    private String consumerId;
+    private String streamName;
 
-    public SimpleRedisStreamProducer(String agentId) {
+    public SimpleRedisStreamProducer(String streamName) {
         redisMessageClient = new RedisMessageClientImpl(new ConnectionFactoryImpl());
-        this.consumerId = agentId;
+        this.streamName = streamName;
     }
 
     public void produce(int n, int sleepInterval) throws MessagingException {
@@ -23,15 +23,14 @@ public class SimpleRedisStreamProducer {
             int i = 0;
             while (true) {
                 AgentMessageDTO agentMessageDTO = createMessage(i);
-                redisMessageClient.produce("aggregator1", consumerId, agentMessageDTO);
+                redisMessageClient.produce(streamName, agentMessageDTO);
                 i++;
             }
         } else {
             System.out.println(String.format("\n Sending %s message(s)", n));
-            AgentMessageDTO agentMessageDTO;
             for (int i = 0; i < n; i++) {
-                agentMessageDTO = createMessage(i);
-                redisMessageClient.produce("aggregator1", consumerId, agentMessageDTO);
+                AgentMessageDTO agentMessageDTO = createMessage(i);
+                redisMessageClient.produce(streamName, agentMessageDTO);
             }
         }
     }

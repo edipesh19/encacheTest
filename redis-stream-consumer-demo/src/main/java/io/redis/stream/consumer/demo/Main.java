@@ -5,7 +5,7 @@ import com.redis.demo.exception.MessagingException;
 public class Main {
     public static void main(String[] args) throws MessagingException {
         System.out.println("======== Starting Consumer ========");
-        if(args.length < 7) {
+        if(args.length < 9) {
             System.out.println("USAGE: \n " +
                 "arg1 -> count, \n" +
                 "arg2 -> delete(true/false), \n" +
@@ -13,7 +13,9 @@ public class Main {
                 "arg4 -> read pending message(true/false)\n" +
                 "arg5 -> claim pending messages(true/false)\n" +
                 "arg6 -> Prev Consumer Id for claim \n" +
-                "arg7 -> AgentID");
+                "arg7 -> AgentID \n" +
+                "arg8 -> Stream Name \n" +
+                "arg9 -> SourcestreamName");
             return;
         }
         System.out.println("Count or not " + args[0]);
@@ -23,8 +25,10 @@ public class Main {
         System.out.println("Claim pending message " + args[4]);
         System.out.println("Prev Consumer id for claiming pending messages " + args[5]);
         System.out.println("Agent ID " + args[6]);
+        System.out.println("Stream Name " + args[7]);
+        System.out.println("Source Stream Name " + args[8]);
 
-        SimpleRedisStreamConsumer consumer = new SimpleRedisStreamConsumer(args[0], args[1], args[2], args[3], args[4], args[5], args[6]);
+        SimpleRedisStreamConsumer consumer = new SimpleRedisStreamConsumer(args[0], args[1], args[2], args[3], args[4], args[5], args[6], args[7], args[8]);
         consumer.consume();
     }
 }

@@ -11,7 +11,7 @@ import lombok.ToString;
 @Getter
 @Setter
 @ToString
-public class AgentMessageDTO {
+public class AgentMessageDTO implements IBaseAgentMessage {
 
     private String msgId;
     private long lastUpdateTime;
