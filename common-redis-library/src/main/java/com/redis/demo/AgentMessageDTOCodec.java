@@ -31,6 +31,10 @@ public class AgentMessageDTOCodec implements RedisCodec<String, AgentMessageDTO>
 
     @Override
     public String decodeKey(ByteBuffer bytes) {
+        if (bytes == null) {
+            System.out.println("****** Key ByteBuffer is null ********");
+            return null;
+        }
         /*try {
             if (bytes == null) {
                 return null;
@@ -58,9 +62,10 @@ public class AgentMessageDTOCodec implements RedisCodec<String, AgentMessageDTO>
     public AgentMessageDTO decodeValue(ByteBuffer bytes) {
         try {
             if (bytes == null) {
+                System.out.println("****** Value ByteBuffer is null ********");
                 return null;
             } else {
-                String data;
+                /*String data;
                 if (bytes.hasArray()) {
                     data = new String(bytes.array(),
                         bytes.arrayOffset() + bytes.position(),
@@ -69,7 +74,8 @@ public class AgentMessageDTOCodec implements RedisCodec<String, AgentMessageDTO>
                     final byte[] b = new byte[bytes.remaining()];
                     bytes.duplicate().get(b);
                     data = new String(b, this.encoding);
-                }
+                }*/
+                String data = stringCodec.decodeValue(bytes);
                 return c_objMapper.readValue(data, AgentMessageDTO.class);
             }
         } catch (Exception e) {
@@ -79,6 +85,10 @@ public class AgentMessageDTOCodec implements RedisCodec<String, AgentMessageDTO>
 
     @Override
     public ByteBuffer encodeKey(String key) {
+        if (key == null) {
+            System.out.println("****** Key String is null ********");
+            return null;
+        }
         /*try {
             if (key == null) {
                 return null;
@@ -98,11 +108,13 @@ public class AgentMessageDTOCodec implements RedisCodec<String, AgentMessageDTO>
     public ByteBuffer encodeValue(AgentMessageDTO messageDTO) {
         try {
             if (messageDTO == null) {
+                System.out.println("****** Message DTO is null ********");
                 return null;
             } else {
-                return ByteBuffer.wrap(toJson(messageDTO).getBytes(encoding));
+                String data = toJson(messageDTO);
+                return stringCodec.encodeValue(data);
             }
-        } catch (JsonProcessingException | UnsupportedEncodingException e) {
+        } catch (JsonProcessingException e) {
             //String errMsg = "Error when serializing AgentMessageDTO to byte[]";
             //logger.error(errMsg, e);
             return null; // Todo : throw exception instead returning null
