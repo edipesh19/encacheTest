@@ -15,11 +15,11 @@ import io.lettuce.core.XReadArgs;
 import io.lettuce.core.api.StatefulRedisConnection;
 import io.lettuce.core.api.sync.RedisCommands;
 
-public class RedisMessageClientImpl implements RedisMessageClient<AgentMessageDTO> {
+public class RedisMessageClientImpl implements RedisMessageClient<String> {
 
     private ConnectionFactory connectionFactory;
-    private StatefulRedisConnection<String, AgentMessageDTO> connection;
-    private RedisCommands<String, AgentMessageDTO> syncCommands;
+    private StatefulRedisConnection<String, String> connection;
+    private RedisCommands<String, String> syncCommands;
 
     public RedisMessageClientImpl(ConnectionFactory connectionFactory) {
         this.connectionFactory = connectionFactory;
@@ -28,9 +28,9 @@ public class RedisMessageClientImpl implements RedisMessageClient<AgentMessageDT
     }
 
     @Override
-    public void produce(String agentAggregatorId, String agentId, AgentMessageDTO agentMessageDTO) throws MessagingException {
-        Map<String, AgentMessageDTO> messageBody = new HashMap<>();
-        messageBody.put(agentMessageDTO.getMsgId(), agentMessageDTO);
+    public void produce(String agentAggregatorId, String agentId, String message) throws MessagingException {
+        Map<String, String> messageBody = new HashMap<>();
+        messageBody.put("MessageID", message);
         try {
             String redisMessageId = syncCommands.xadd(getstreamName(agentAggregatorId, agentId), messageBody);
             System.out.println("Message posted: " + redisMessageId);
@@ -52,9 +52,9 @@ public class RedisMessageClientImpl implements RedisMessageClient<AgentMessageDT
     }
 
     @Override
-    public List<StreamMessage<String, AgentMessageDTO>> readAsStream(String agentAggregatorId, String agentId, int count) throws MessagingException {
+    public List<StreamMessage<String, String>> readAsStream(String agentAggregatorId, String agentId, int count) throws MessagingException {
         try {
-            List<StreamMessage<String, AgentMessageDTO>> messages = syncCommands.xreadgroup(
+            List<StreamMessage<String, String>> messages = syncCommands.xreadgroup(
                 Consumer.from(agentAggregatorId, agentId),
                 XReadArgs.Builder.count(count)
                     .block(100),
@@ -71,16 +71,16 @@ public class RedisMessageClientImpl implements RedisMessageClient<AgentMessageDT
     }
 
     @Override
-    public List<AgentMessageDTO> read(String agentAggregatorId, String agentId, int count) throws MessagingException {
+    public List<String> read(String agentAggregatorId, String agentId, int count) throws MessagingException {
         try {
-            List<StreamMessage<String, AgentMessageDTO>> messages = syncCommands.xreadgroup(
+            List<StreamMessage<String, String>> messages = syncCommands.xreadgroup(
                 Consumer.from(agentAggregatorId, agentId),
                 XReadArgs.Builder.count(count)
                     .block(100),
                 XReadArgs.StreamOffset.lastConsumed(getstreamName(agentAggregatorId, agentId))
             );
 
-            List<AgentMessageDTO> agentMessageDTOList = null;
+            List<String> agentMessageDTOList = null;
             if (!messages.isEmpty()) {
                 agentMessageDTOList = messages.stream().map(a -> a.getBody().values()).flatMap(c -> c.stream()).collect(Collectors.toList());
             /*for (StreamMessage<String, AgentMessageDTO> message : messages) {
@@ -126,7 +126,7 @@ public class RedisMessageClientImpl implements RedisMessageClient<AgentMessageDT
     }
 
     @Override
-    public List<StreamMessage<String, AgentMessageDTO>> readPendingMessage(String agentAggregatorId, String agentId, int count) throws MessagingException {
+    public List<StreamMessage<String, String>> readPendingMessage(String agentAggregatorId, String agentId, int count) throws MessagingException {
         try {
             List<Object> pending = syncCommands.xpending(getstreamName(agentAggregatorId, agentId),
                 Consumer.from(agentAggregatorId, agentId),
@@ -134,7 +134,7 @@ public class RedisMessageClientImpl implements RedisMessageClient<AgentMessageDT
                 Limit.create(0, 100));
             System.out.println("****Pending list: " + pending);
 
-            List<StreamMessage<String, AgentMessageDTO>> pendingMessages = syncCommands.xreadgroup(
+            List<StreamMessage<String, String>> pendingMessages = syncCommands.xreadgroup(
                 Consumer.from(agentAggregatorId, agentId),
                 XReadArgs.Builder.count(count)
                     .block(5000),
@@ -164,9 +164,9 @@ public class RedisMessageClientImpl implements RedisMessageClient<AgentMessageDT
     }
 
     @Override
-    public List<AgentMessageDTO> getMessageList(List<StreamMessage<String, AgentMessageDTO>> streamMessageList) throws MessagingException {
+    public List<String> getMessageList(List<StreamMessage<String, String>> streamMessageList) throws MessagingException {
         try {
-            List<AgentMessageDTO> agentMessageDTOList = null;
+            List<String> agentMessageDTOList = null;
             if (!streamMessageList.isEmpty()) {
                 agentMessageDTOList = streamMessageList.stream().map(a -> a.getBody().values()).flatMap(c -> c.stream()).collect(Collectors.toList());
             /*for (StreamMessage<String, AgentMessageDTO> message : messages) {

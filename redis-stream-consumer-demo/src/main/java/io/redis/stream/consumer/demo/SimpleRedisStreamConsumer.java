@@ -42,7 +42,7 @@ public class SimpleRedisStreamConsumer {
             //pendingCount = redisMessageClient.getPendingCount("aggregator1", consumerId);
             System.out.println("----------- Pending count: " + pendingCount);
             if (pendingCount > 0) {
-                List<StreamMessage<String, AgentMessageDTO>> pendingMessageList = redisMessageClient.readPendingMessage("aggregator1", consumerId, pendingCount);
+                List<StreamMessage<String, String>> pendingMessageList = redisMessageClient.readPendingMessage("aggregator1", consumerId, pendingCount);
                 System.out.println("&&& Pending msg list size: " + pendingMessageList + "\n");
                 System.out.println("******** AgentMessageDTOList" + redisMessageClient.getMessageList(pendingMessageList));
 
@@ -55,7 +55,7 @@ public class SimpleRedisStreamConsumer {
 
         System.out.println("Waiting for new messages");
         while (true) {
-            List<StreamMessage<String, AgentMessageDTO>> streamMessageList = redisMessageClient.readAsStream("aggregator1", consumerId, count);
+            List<StreamMessage<String, String>> streamMessageList = redisMessageClient.readAsStream("aggregator1", consumerId, count);
             System.out.println("******* AgentMessageDTOList: " + redisMessageClient.getMessageList(streamMessageList));
 
             if (acks) {

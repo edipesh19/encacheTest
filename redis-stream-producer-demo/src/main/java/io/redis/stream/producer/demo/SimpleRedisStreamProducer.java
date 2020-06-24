@@ -22,18 +22,22 @@ public class SimpleRedisStreamProducer {
             System.out.println("Sending endless message in a loop with " + sleepInterval + " mili second(s) sleep");
             int i = 0;
             while (true) {
-                AgentMessageDTO agentMessageDTO = createMessage(i);
-                redisMessageClient.produce("aggregator1", consumerId, agentMessageDTO);
+                String string = create(i);
+                redisMessageClient.produce("aggregator1", consumerId, string);
                 i++;
             }
         } else {
             System.out.println(String.format("\n Sending %s message(s)", n));
-            AgentMessageDTO agentMessageDTO;
             for (int i = 0; i < n; i++) {
-                agentMessageDTO = createMessage(i);
-                redisMessageClient.produce("aggregator1", consumerId, agentMessageDTO);
+                String string = create(i);
+                redisMessageClient.produce("aggregator1", consumerId, string);
             }
         }
+    }
+
+    private String create(int i) {
+        String message = "Message" + i;
+        return message;
     }
 
     private AgentMessageDTO createMessage(int i) {

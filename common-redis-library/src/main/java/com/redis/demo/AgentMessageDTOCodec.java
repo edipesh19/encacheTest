@@ -12,7 +12,7 @@ import java.nio.ByteBuffer;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 
-public class AgentMessageDTOCodec implements RedisCodec<String, AgentMessageDTO> {
+public class AgentMessageDTOCodec implements RedisCodec<String, String> {
 
     private static ObjectMapper c_objMapper;
     private static StringCodec stringCodec;
@@ -55,17 +55,26 @@ public class AgentMessageDTOCodec implements RedisCodec<String, AgentMessageDTO>
             return null; // Todo : throw exception instead returning null
         }*/
         //return charset.decode(bytes).toString();
-        return stringCodec.decodeKey(bytes);
+        String result = stringCodec.decodeKey(bytes);
+        System.out.println(">>>> Returning key: " + result);
+        return result;
     }
 
     @Override
+    public String decodeValue(ByteBuffer bytes) {
+        String result = stringCodec.decodeValue(bytes);
+        System.out.println(">>>> Returning Value: " + result);
+        return result;
+    }
+
+    /*@Override
     public AgentMessageDTO decodeValue(ByteBuffer bytes) {
         try {
             if (bytes == null) {
                 System.out.println("****** Value ByteBuffer is null ********");
                 return null;
             } else {
-                /*String data;
+                String data;
                 if (bytes.hasArray()) {
                     data = new String(bytes.array(),
                         bytes.arrayOffset() + bytes.position(),
@@ -74,14 +83,14 @@ public class AgentMessageDTOCodec implements RedisCodec<String, AgentMessageDTO>
                     final byte[] b = new byte[bytes.remaining()];
                     bytes.duplicate().get(b);
                     data = new String(b, this.encoding);
-                }*/
+                }
                 String data = stringCodec.decodeValue(bytes);
                 return c_objMapper.readValue(data, AgentMessageDTO.class);
             }
         } catch (Exception e) {
             return null; // Todo : throw exception instead returning null
         }
-    }
+    }*/
 
     @Override
     public ByteBuffer encodeKey(String key) {
@@ -101,10 +110,17 @@ public class AgentMessageDTOCodec implements RedisCodec<String, AgentMessageDTO>
             return null; // Todo : throw exception instead returning null
         }*/
         //return charset.encode(key);
+        System.out.println(":::::Key: " + key);
         return stringCodec.encodeKey(key);
     }
 
     @Override
+    public ByteBuffer encodeValue(String value) {
+        System.out.println(":::::Value: " + value);
+        return stringCodec.encodeValue(value);
+    }
+
+    /*@Override
     public ByteBuffer encodeValue(AgentMessageDTO messageDTO) {
         try {
             if (messageDTO == null) {
@@ -119,5 +135,5 @@ public class AgentMessageDTOCodec implements RedisCodec<String, AgentMessageDTO>
             //logger.error(errMsg, e);
             return null; // Todo : throw exception instead returning null
         }
-    }
+    }*/
 }
