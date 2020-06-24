@@ -22,7 +22,7 @@ public class Main {
         System.out.println("Read pending message " + args[3]);
         System.out.println("Claim pending message " + args[4]);
         System.out.println("Prev Consumer id for claiming pending messages " + args[5]);
-        System.out.println("Agent ID" + args[6]);
+        System.out.println("Agent ID " + args[6]);
 
         SimpleRedisStreamConsumer consumer = new SimpleRedisStreamConsumer(args[0], args[1], args[2], args[3], args[4], args[5], args[6]);
         consumer.consume();

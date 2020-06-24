@@ -31,6 +31,25 @@ public class AgentMessageDTOCodec implements RedisCodec<String, AgentMessageDTO>
 
     @Override
     public String decodeKey(ByteBuffer bytes) {
+        /*try {
+            if (bytes == null) {
+                return null;
+            } else {
+                String data;
+                if (bytes.hasArray()) {
+                    data = new String(bytes.array(),
+                        bytes.arrayOffset() + bytes.position(),
+                        bytes.remaining(), this.encoding);
+                } else {
+                    final byte[] b = new byte[bytes.remaining()];
+                    bytes.duplicate().get(b);
+                    data = new String(b, this.encoding);
+                }
+                return data;
+            }
+        } catch (Exception e) {
+            return null; // Todo : throw exception instead returning null
+        }*/
         //return charset.decode(bytes).toString();
         return stringCodec.decodeKey(bytes);
     }
@@ -60,6 +79,17 @@ public class AgentMessageDTOCodec implements RedisCodec<String, AgentMessageDTO>
 
     @Override
     public ByteBuffer encodeKey(String key) {
+        /*try {
+            if (key == null) {
+                return null;
+            } else {
+                return ByteBuffer.wrap(toJson(key).getBytes(encoding));
+            }
+        } catch (JsonProcessingException | UnsupportedEncodingException e) {
+            //String errMsg = "Error when serializing AgentMessageDTO to byte[]";
+            //logger.error(errMsg, e);
+            return null; // Todo : throw exception instead returning null
+        }*/
         //return charset.encode(key);
         return stringCodec.encodeKey(key);
     }

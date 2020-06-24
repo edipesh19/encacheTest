@@ -67,7 +67,7 @@ public class RedisMessageClientImpl implements RedisMessageClient<AgentMessageDT
     }
 
     private String getstreamName(String agentAggregatorId, String agentId) {
-        return agentAggregatorId + agentId + 1;
+        return agentAggregatorId + agentId;
     }
 
     @Override
@@ -131,8 +131,8 @@ public class RedisMessageClientImpl implements RedisMessageClient<AgentMessageDT
             List<Object> pending = syncCommands.xpending(getstreamName(agentAggregatorId, agentId),
                 Consumer.from(agentAggregatorId, agentId),
                 Range.create("-", "+"),
-                Limit.create(0, Integer.MAX_VALUE));
-            System.out.println("****PEnding list: " + pending);
+                Limit.create(0, 100));
+            System.out.println("****Pending list: " + pending);
 
             List<StreamMessage<String, AgentMessageDTO>> pendingMessages = syncCommands.xreadgroup(
                 Consumer.from(agentAggregatorId, agentId),
